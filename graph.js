@@ -1,75 +1,113 @@
 class Graph {
-  constructor() {
-    this.adjacencyList = new Map();
-    this.visited = new Set();
+  static #adjacencyList = new Map();
+  static #visited = new Set();
+  static #path = new Set();
+  static #isFound = false;
+  static addNode(v, type) {
+    this.#adjacencyList.set(v, []);
   }
-  addNode(v) {
-    this.adjacencyList.set(v, []);
+  static addEdge(from, to) {
+    this.#adjacencyList.get(from).push(to);
+    this.#adjacencyList.get(to).push(from);
   }
-  addEdge(from, to) {
-    this.adjacencyList.get(from).push(to);
-    this.adjacencyList.get(to).push(from);
+  static clearVisited() {
+    this.#visited = new Set();
+    this.#isFound = false;
+    this.#path = new Set();
   }
-  removeNode(v) {
+  static removeNode(v) {
     // deleting node from list
-    this.adjacencyList.delete(v);
+    this.#adjacencyList.delete(v);
 
     // Remove Edges of the node
-    for (let [key, value] of this.adjacencyList.entries()) {
+    for (let [key, value] of this.#adjacencyList.entries()) {
       const index = value.indexOf(v);
       if (index >= 0) {
         const splicedValue = value.filter((x) => x !== v);
-        this.adjacencyList.set(key, splicedValue);
+        this.#adjacencyList.set(key, splicedValue);
       }
     }
   }
-  breadFirstSearch(start, nodeToFind) {
+  static depthFirstSearch(start, nodeToFind, strength) {
+    this.#visited.add(start);
+    const destinations = this.#adjacencyList.get(start);
+    if (destinations.includes(nodeToFind)) {
+      this.#visited.add(nodeToFind);
+      this.#isFound = true;
+      return;
+    }
+    for (let destination of destinations) {
+      if (!this.#visited.has(destination)) {
+        this.depthFirstSearch(destination, nodeToFind);
+        if (this.#isFound) return;
+      }
+    }
+    this.#visited.delete(start);
+  }
+  static breadFirstSearch(start, nodeToFind) {
+    this.clearVisited();
     const queue = [start];
-    const visited = new Set();
     while (queue.length > 0) {
       const origin = queue.shift(); // mutates the array and returns first element
-      const destinations = this.adjacencyList.get(origin);
+      this.#visited.add(origin);
+      this.#path.add(origin);
+      const destinations = this.#adjacencyList.get(origin);
+      if (destinations.includes(nodeToFind)) {
+        this.#isFound = true;
+        this.#visited.add(nodeToFind);
+        this.#path.add(nodeToFind);
+        return;
+      }
       for (const destination of destinations) {
         if (nodeToFind === destination) {
-          console.log(`Found -> ${destination} `, visited);
+          this.#visited.add(nodeToFind);
+          this.#isFound = true;
+          return;
         }
-        if (!visited.has(destination)) {
-          visited.add(destination);
+        if (!this.#visited.has(destination)) {
+          this.#visited.add(destination);
           queue.push(destination);
         }
       }
     }
   }
-  depthFirstSearch(start, nodeToFind) {
-    this.visited.add(start);
-    const destinations = this.adjacencyList.get(start);
-    for (const destination of destinations) {
-      if (destination === nodeToFind) {
-        console.log(`Found -> ${nodeToFind}`, this.visited);
-      }
-      if (!this.visited.has(destination)) {
-        this.depthFirstSearch(destination, nodeToFind);
-      }
+  static getPath(start, nodeToFind, searchType = "dfs") {
+    this.clearVisited();
+    if (start === nodeToFind) return `${start}->${nodeToFind}`;
+
+    if (searchType === "dfs") {
+      this.depthFirstSearch(start, nodeToFind);
+      return `Path Using DFS-> ${
+        this.#visited.size > 0 ? Array.from(this.#visited).join("->") : ""
+      }`;
+    } else {
+      this.breadFirstSearch(start, nodeToFind);
+      return `Path Using BFS -> ${
+        this.#path.size > 0 ? Array.from(this.#path).join("->") : ""
+      }`;
     }
+  }
+  static getAdjacencyList() {
+    return this.#adjacencyList;
   }
 }
 
-const graph = new Graph();
-graph.addNode("Trichy");
-graph.addNode("Chennai");
-graph.addNode("Coimbatore");
-graph.addNode("Bangalore");
-graph.addNode("Namakal");
-graph.addNode("Karur");
+Graph.addNode("Trichy");
+Graph.addNode("Chennai");
+Graph.addNode("Coimbatore");
+Graph.addNode("Bangalore");
+Graph.addNode("Namakal");
+Graph.addNode("Karur");
 
-graph.addEdge("Trichy", "Coimbatore");
-graph.addEdge("Chennai", "Coimbatore");
-graph.addEdge("Bangalore", "Trichy");
+Graph.addEdge("Trichy", "Coimbatore");
+Graph.addEdge("Chennai", "Coimbatore");
+Graph.addEdge("Bangalore", "Trichy");
+console.log(Graph.getAdjacencyList());
+console.log(Graph.getPath("Trichy", "Chennai", "bfs"));
+console.log(Graph.getPath("Trichy", "Chennai", "dfs"));
+console.log(Graph.getPath("Trichy", "Bangalore", "bfs"));
+console.log(Graph.getPath("Trichy", "Bangalore", "dfs"));
+console.log(Graph.getPath("Coimbatore", "Bangalore", "bfs"));
+console.log(Graph.getPath("Coimbatore", "Bangalore", "dfs"));
 
-// console.log(graph);
-//   console.log("After Removing Node Trichy");
-//   graph.removeNode("Trichy");
-//   console.log(graph);
-graph.breadFirstSearch("Trichy", "Chennai");
-
-graph.depthFirstSearch("Trichy", "Chennai");
+Graph.removeNode("Trichy");
