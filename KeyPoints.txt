@@ -1,0 +1,8 @@
+Big O Notation - https://www.youtube.com/watch?v=BgLTDT03QtU
+Hashmap - O ( 1 ) 
+Binary Search, Binary Search Tree - O (logN) - data set to iterate divided by 2 - Near O(1)
+Example factorial, using hashamp to store found values - O(Square Root Of N) Rare - Near O( N )
+1 loop - O(N)
+Merge Sort, Heap Sort - (N logN) - Build Heap N, Heap Sort LogN
+Nested Loop - O ( N square ) - Matrix 2X3 (MXN) equivalent to N Square
+N! - Permutations, Sometimes in Graph(Travelling Salesman Problem)
